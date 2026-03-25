@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Elite Transport AI Test Page</title>
+  <style>
+    :root {
+      --bg: #f3efe5;
+      --bg-accent: #d8e6df;
+      --panel: rgba(255, 252, 246, 0.9);
+      --panel-strong: #fffdf8;
+      --text: #18211c;
+      --muted: #5f695f;
+      --line: rgba(24, 33, 28, 0.12);
+      --brand: #165a4a;
+      --brand-strong: #0f4337;
+      --user-bubble: #1f6f5d;
+      --assistant-bubble: #eef4ef;
+      --shadow: 0 20px 60px rgba(29, 38, 33, 0.14);
+      --radius-lg: 28px;
+      --radius-md: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: "Aptos", "Trebuchet MS", "Segoe UI Variable", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(22, 90, 74, 0.18), transparent 30%),
+        radial-gradient(circle at top right, rgba(180, 122, 56, 0.15), transparent 28%),
+        linear-gradient(135deg, var(--bg), var(--bg-accent));
+      padding: 24px;
+    }
+
+    .shell {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .intro {
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(22, 90, 74, 0.1);
+      color: var(--brand-strong);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Georgia", "Times New Roman", serif;
+      font-size: clamp(2rem, 4vw, 3.1rem);
+      line-height: 1.02;
+    }
+
+    .intro p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 1rem;
+    }
+
+    .meta {
+      display: grid;
+      gap: 12px;
+      margin-top: auto;
+    }
+
+    .meta-item {
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .meta-label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+
+    .meta strong,
+    .meta code {
+      font-size: 0.95rem;
+      color: var(--text);
+      word-break: break-word;
+    }
+
+    .chat-card {
+      display: grid;
+      grid-template-rows: auto 1fr auto auto;
+      min-height: 78vh;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      padding: 22px 24px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.45);
+    }
+
+    .chat-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .chat-title {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(22, 90, 74, 0.08);
+      color: var(--brand-strong);
+      font-size: 0.86rem;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #29a36a;
+      flex: 0 0 auto;
+    }
+
+    .chat-subtitle {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.96rem;
+    }
+
+    .messages {
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0));
+    }
+
+    .message {
+      max-width: min(80%, 720px);
+      padding: 14px 16px;
+      border-radius: 18px;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      border: 1px solid transparent;
+      animation: fadeIn 180ms ease-out;
+    }
+
+    .message.assistant {
+      align-self: flex-start;
+      background: var(--assistant-bubble);
+      border-color: rgba(22, 90, 74, 0.08);
+      color: var(--text);
+      border-top-left-radius: 6px;
+    }
+
+    .message.user {
+      align-self: flex-end;
+      background: var(--user-bubble);
+      color: #f5fbf7;
+      border-top-right-radius: 6px;
+    }
+
+    .message.error {
+      align-self: stretch;
+      max-width: 100%;
+      background: rgba(164, 61, 50, 0.1);
+      color: #7d261d;
+      border-color: rgba(164, 61, 50, 0.18);
+    }
+
+    .message-label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      opacity: 0.72;
+    }
+
+    .typing {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 18px;
+    }
+
+    .typing span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(22, 90, 74, 0.5);
+      animation: pulse 1s infinite ease-in-out;
+    }
+
+    .typing span:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    .typing span:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    .composer {
+      padding: 18px 20px 20px;
+      border-top: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.65);
+    }
+
+    .preview-browser {
+      display: grid;
+      gap: 12px;
+      padding: 18px 20px 20px;
+      border-top: 1px solid var(--line);
+      background: rgba(242, 247, 244, 0.9);
+    }
+
+    .preview-browser.hidden {
+      display: none;
+    }
+
+    .preview-browser-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .preview-browser-title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .preview-browser-meta {
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .preview-browser-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .secondary-btn {
+      border: 1px solid rgba(24, 33, 28, 0.15);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.8);
+      color: var(--text);
+      text-decoration: none;
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 10px 14px;
+      cursor: pointer;
+    }
+
+    .preview-content {
+      min-height: 420px;
+      border: 1px solid rgba(24, 33, 28, 0.12);
+      border-radius: 18px;
+      background: #ffffff;
+      overflow: auto;
+    }
+
+    .preview-fallback-shell {
+      padding: 24px;
+      color: #1f2937;
+      background: #f7f8fa;
+      line-height: 1.6;
+    }
+
+    .preview-fallback-shell .card {
+      max-width: 840px;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid #d9dee6;
+      border-radius: 14px;
+      padding: 20px;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .composer-form {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .input-wrap {
+      display: grid;
+      gap: 10px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 64px;
+      max-height: 180px;
+      resize: vertical;
+      border: 1px solid rgba(24, 33, 28, 0.16);
+      border-radius: 18px;
+      background: var(--panel-strong);
+      color: var(--text);
+      padding: 16px 18px;
+      font: inherit;
+      line-height: 1.5;
+      outline: none;
+      transition: border-color 120ms ease, box-shadow 120ms ease;
+    }
+
+    textarea:focus {
+      border-color: rgba(22, 90, 74, 0.5);
+      box-shadow: 0 0 0 4px rgba(22, 90, 74, 0.08);
+    }
+
+    .hint-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .send-btn {
+      border: 0;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--brand), var(--brand-strong));
+      color: #f4fbf7;
+      font: inherit;
+      font-weight: 700;
+      min-width: 120px;
+      min-height: 64px;
+      padding: 0 20px;
+      cursor: pointer;
+      transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+      box-shadow: 0 14px 28px rgba(15, 67, 55, 0.18);
+    }
+
+    .send-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.62;
+      cursor: wait;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .footer-note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    @keyframes pulse {
+      0%, 80%, 100% {
+        transform: scale(0.8);
+        opacity: 0.45;
+      }
+      40% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .chat-card {
+        min-height: 72vh;
+      }
+    }
+
+    @media (max-width: 680px) {
+      body {
+        padding: 14px;
+      }
+
+      .intro,
+      .chat-header,
+      .messages,
+      .composer {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .composer-form {
+        grid-template-columns: 1fr;
+      }
+
+      .send-btn {
+        width: 100%;
+        min-height: 56px;
+      }
+
+      .message {
+        max-width: 92%;
+      }
+
+      .hint-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="card intro" aria-label="Assistant overview">
+      <span class="eyebrow">Sample Test Page</span>
+      <h1>Elite Transport AI Assistant</h1>
+      <p>
+        This is a standalone demo page for testing the live AI backend before we move the final
+        experience into the main website. It can be used to check chat quality, loading behavior,
+        and response reliability against the real Worker endpoint.
+      </p>
+      <p>
+        The assistant can support TTFPP, COBES, attachments, transport guidance, report writing,
+        logbook help, questionnaires, and general field preparation.
+      </p>
+
+      <div class="meta">
+        <div class="meta-item">
+          <span class="meta-label">Live Worker Endpoint</span>
+          <code>https://uds-ttfpp-whatsapp-bot.elitetransportghana.workers.dev/api/chat</code>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Session Mode</span>
+          <strong>Persistent browser session for quick testing</strong>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Integration Note</span>
+          <strong>Later, we can move this exact UI structure into the real website page.</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="card chat-card" aria-label="AI chat interface">
+      <header class="chat-header">
+        <div class="chat-header-row">
+          <h2 class="chat-title">Live Chat Test</h2>
+          <div class="status-pill" id="connection-status">
+            <span class="status-dot"></span>
+            <span>Ready for testing</span>
+          </div>
+        </div>
+        <p class="chat-subtitle">
+          Send a real message to the deployed Worker and inspect how the assistant responds.
+          This page is intentionally simple so we can later embed the same flow inside the main site.
+        </p>
+      </header>
+
+      <div class="messages" id="messages" aria-live="polite"></div>
+
+      <section class="preview-browser hidden" id="preview-browser" aria-label="Artifact preview">
+        <div class="preview-browser-header">
+          <div>
+            <h3 class="preview-browser-title" id="preview-title">Generated artifact preview</h3>
+            <div class="preview-browser-meta" id="preview-meta">The latest artifact preview will appear here.</div>
+          </div>
+          <div class="preview-browser-actions">
+            <a class="secondary-btn" id="preview-open-link" href="#" target="_blank" rel="noreferrer">Open in new tab</a>
+            <button class="secondary-btn" id="preview-close-button" type="button">Hide preview</button>
+          </div>
+        </div>
+        <div class="preview-content" id="preview-content"></div>
+      </section>
+
+      <div class="composer">
+        <form class="composer-form" id="chat-form">
+          <div class="input-wrap">
+            <label for="message-input" class="meta-label">Message</label>
+            <textarea
+              id="message-input"
+              placeholder="Ask something like: How do Year 2 students usually travel?"
+              autocomplete="off"
+            ></textarea>
+            <div class="hint-row">
+              <span>Press Enter to send. Use Shift + Enter for a new line.</span>
+              <span id="request-state">No request in progress</span>
+            </div>
+          </div>
+          <button class="send-btn" id="send-button" type="submit">Send</button>
+        </form>
+        <p class="footer-note">
+          Replace the Worker URL in the script later only if the final production endpoint changes.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Replace this only if your live backend endpoint changes later.
+    const WORKER_CHAT_URL = "https://uds-ttfpp-whatsapp-bot.elitetransportghana.workers.dev/api/chat";
+
+    // If WEBSITE_API_KEY is ever required for browser requests, do not hardcode it here.
+    // Instead, proxy through your website backend or inject a safe session-based auth flow later.
+    // const OPTIONAL_WEBSITE_API_KEY = "";
+
+    const WORKER_BASE_URL = new URL(WORKER_CHAT_URL).origin;
+
+    const messagesEl = document.getElementById("messages");
+    const formEl = document.getElementById("chat-form");
+    const inputEl = document.getElementById("message-input");
+    const sendButtonEl = document.getElementById("send-button");
+    const requestStateEl = document.getElementById("request-state");
+    const connectionStatusEl = document.getElementById("connection-status");
+    const previewBrowserEl = document.getElementById("preview-browser");
+    const previewContentEl = document.getElementById("preview-content");
+    const previewTitleEl = document.getElementById("preview-title");
+    const previewMetaEl = document.getElementById("preview-meta");
+    const previewOpenLinkEl = document.getElementById("preview-open-link");
+    const previewCloseButtonEl = document.getElementById("preview-close-button");
+
+    const sessionStorageKey = "elite_ai_test_session_id";
+    const sessionId = getOrCreateSessionId();
+
+    appendMessage("assistant", [
+      "Welcome. This sample page is connected to the live Worker backend.",
+      "Try a real question such as:",
+      "- What is COBES?",
+      "- How do Year 2 students usually go?",
+      "- Help me write a TTFPP report introduction."
+    ].join("\\n"));
+
+    formEl.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      await sendMessage();
+    });
+
+    previewCloseButtonEl.addEventListener("click", () => {
+      hidePreview();
+    });
+
+    inputEl.addEventListener("keydown", async (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        await sendMessage();
+      }
+    });
+
+    async function sendMessage() {
+      const rawMessage = inputEl.value.trim();
+      if (!rawMessage) return;
+
+      appendMessage("user", rawMessage);
+      inputEl.value = "";
+      setBusyState(true);
+
+      const typingId = appendTypingMessage();
+
+      try {
+        const response = await fetch(WORKER_CHAT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+            // "x-website-key": OPTIONAL_WEBSITE_API_KEY
+          },
+          body: JSON.stringify({
+            input: rawMessage,
+            session_id: sessionId,
+            user_id: sessionId,
+            skip_onboarding: true
+          })
+        });
+
+        const payload = await readJsonSafely(response);
+        removeMessageById(typingId);
+
+        if (!response.ok || !payload?.ok) {
+          const errorText =
+            payload?.error ||
+            payload?.detail ||
+            `Request failed with status ${response.status}`;
+          appendMessage("error", `The assistant request did not complete cleanly.\\n${errorText}`);
+          updateConnectionState("Request failed", false);
+          return;
+        }
+
+        const assistantText =
+          payload.output ||
+          payload.actual_output ||
+          payload.answer ||
+          "The request succeeded, but no response text was returned.";
+
+        appendMessage("assistant", assistantText);
+        if (payload.preview_path) {
+          if (payload.tool_action === "document.generate") {
+            showDocumentResult(payload);
+          } else {
+            showPreview(payload);
+          }
+        }
+        updateConnectionState("Live backend connected", true);
+      } catch (error) {
+        removeMessageById(typingId);
+        appendMessage(
+          "error",
+          [
+            "The page could not reach the Worker endpoint.",
+            "Check that the Worker is deployed and that browser CORS is enabled for the chat route.",
+            `Technical detail: ${error.message || String(error)}`
+          ].join("\\n")
+        );
+        updateConnectionState("Connection problem", false);
+      } finally {
+        setBusyState(false);
+        inputEl.focus();
+      }
+    }
+
+    function appendMessage(role, text) {
+      const messageEl = document.createElement("article");
+      messageEl.className = `message ${role}`;
+      messageEl.innerHTML = `
+        <span class="message-label">${labelForRole(role)}</span>
+        <div>${escapeHtml(text).replace(/\\n/g, "<br>")}</div>
+      `;
+      messagesEl.appendChild(messageEl);
+      scrollMessagesToBottom();
+      return messageEl;
+    }
+
+    function appendTypingMessage() {
+      const typingId = `typing-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const messageEl = document.createElement("article");
+      messageEl.className = "message assistant";
+      messageEl.dataset.messageId = typingId;
+      messageEl.innerHTML = `
+        <span class="message-label">Assistant</span>
+        <div class="typing" aria-label="Assistant is typing">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      `;
+      messagesEl.appendChild(messageEl);
+      scrollMessagesToBottom();
+      return typingId;
+    }
+
+    function removeMessageById(messageId) {
+      const target = messagesEl.querySelector(`[data-message-id="${messageId}"]`);
+      if (target) target.remove();
+    }
+
+    function setBusyState(isBusy) {
+      sendButtonEl.disabled = isBusy;
+      inputEl.disabled = isBusy;
+      sendButtonEl.textContent = isBusy ? "Sending..." : "Send";
+      requestStateEl.textContent = isBusy ? "Waiting for AI response..." : "No request in progress";
+    }
+
+    function updateConnectionState(label, isHealthy) {
+      connectionStatusEl.lastElementChild.textContent = label;
+      connectionStatusEl.querySelector(".status-dot").style.background = isHealthy ? "#29a36a" : "#c66739";
+    }
+
+    function showPreview(payload) {
+      const previewUrl = buildArtifactPreviewUrl(payload.preview_path);
+      previewBrowserEl.classList.remove("hidden");
+      previewTitleEl.textContent = payload.tool_action === "questionnaire.generate"
+        ? "Questionnaire preview"
+        : payload.tool_action === "logbook.generate"
+          ? "Logbook preview"
+          : "Generated artifact preview";
+      previewMetaEl.textContent = `Artifact ${payload.artifact_id || ""} loaded from the Worker preview route.`;
+      previewOpenLinkEl.href = previewUrl;
+      loadPreviewIntoFrame(previewUrl);
+    }
+
+    function showDocumentResult(payload) {
+      const previewUrl = buildArtifactPreviewUrl(payload.preview_path);
+      const toolResult = payload.tool_result || {};
+      const relativeDownloadPath = String(toolResult.download_path || "").trim();
+      const absoluteDownloadUrl = String(toolResult.download_url || "").trim() || buildWorkerUrl(relativeDownloadPath);
+      const absoluteDocUrl = String(toolResult.doc_url || "").trim() || absoluteDownloadUrl;
+      const absoluteArtifactUrl = buildWorkerUrl(payload.artifact_path || "");
+      previewBrowserEl.classList.remove("hidden");
+      previewTitleEl.textContent = "Generated document result";
+      previewMetaEl.textContent = `Artifact ${payload.artifact_id || ""} is ${String(toolResult.status || "ready")}.`;
+      previewOpenLinkEl.href = absoluteDocUrl || absoluteDownloadUrl || previewUrl || "#";
+      previewContentEl.innerHTML = buildDocumentResultMarkup({
+        title: String(toolResult.title || payload.tool_result?.title || "Generated document"),
+        status: String(toolResult.status || "ready"),
+        provider: String(toolResult.provider || toolResult.storage_provider || ""),
+        documentUrl: absoluteDocUrl,
+        previewUrl,
+        downloadUrl: absoluteDownloadUrl,
+        artifactUrl: absoluteArtifactUrl
+      });
+    }
+
+    function hidePreview() {
+      previewBrowserEl.classList.add("hidden");
+      previewContentEl.innerHTML = "";
+      previewOpenLinkEl.href = "#";
+    }
+
+    function buildArtifactPreviewUrl(previewPath) {
+      const resolved = new URL(String(previewPath || ""), WORKER_BASE_URL);
+      if (!resolved.searchParams.get("user_id")) {
+        resolved.searchParams.set("user_id", sessionId);
+      }
+      if (!resolved.searchParams.get("actor_user_id")) {
+        resolved.searchParams.set("actor_user_id", sessionId);
+      }
+      if (!resolved.searchParams.get("format")) {
+        resolved.searchParams.set("format", "html");
+      }
+      return resolved.toString();
+    }
+
+    function buildWorkerUrl(pathOrUrl) {
+      const raw = String(pathOrUrl || "").trim();
+      if (!raw) return "";
+      return new URL(raw, WORKER_BASE_URL).toString();
+    }
+
+    async function loadPreviewIntoFrame(previewUrl) {
+      previewContentEl.innerHTML = buildLocalPreviewShell("Loading preview...");
+      try {
+        const response = await fetch(previewUrl, {
+          method: "GET"
+        });
+        const html = await response.text();
+        if (!response.ok) {
+          previewContentEl.innerHTML = buildLocalPreviewShell(
+            `Preview request failed with status ${response.status}.\n${html || "No response body."}`
+          );
+          previewMetaEl.textContent = "Preview could not be loaded inside the page. Use the new-tab link if needed.";
+          return;
+        }
+        previewContentEl.innerHTML = extractPreviewMarkup(html);
+        previewMetaEl.textContent = "Preview loaded inside the test page.";
+      } catch (error) {
+        previewContentEl.innerHTML = buildLocalPreviewShell(
+          `Could not load preview inside the page.\n${error.message || String(error)}`
+        );
+        previewMetaEl.textContent = "Preview fetch failed. Use the new-tab link if needed.";
+      }
+    }
+
+    function extractPreviewMarkup(html) {
+      const parser = new DOMParser();
+      const parsed = parser.parseFromString(String(html || ""), "text/html");
+      parsed.querySelectorAll("script").forEach((node) => node.remove());
+      const bodyMarkup = String(parsed.body?.innerHTML || "").trim();
+      return bodyMarkup || buildLocalPreviewShell("Preview returned no body content.");
+    }
+
+    function buildLocalPreviewShell(text) {
+      const safeText = escapeHtml(String(text || "No preview available.")).replace(/\n/g, "<br>");
+      return '<div class="preview-fallback-shell"><div class="card">' + safeText + "</div></div>";
+    }
+
+    function buildDocumentResultMarkup(input) {
+      const title = escapeHtml(input.title || "Generated document");
+      const status = escapeHtml(input.status || "ready");
+      const provider = escapeHtml(input.provider || "document service");
+      const documentUrl = escapeHtml(input.documentUrl || "#");
+      const previewUrl = escapeHtml(input.previewUrl || "#");
+      const downloadUrl = escapeHtml(input.downloadUrl || "#");
+      const artifactUrl = escapeHtml(input.artifactUrl || "#");
+      return [
+        '<div class="preview-fallback-shell">',
+        '  <div class="card">',
+        `    <h3>${title}</h3>`,
+        `    <p>Status: <strong>${status}</strong></p>`,
+        `    <p>Provider: <strong>${provider}</strong></p>`,
+        '    <p>The document-generation path completed. Use the links below to open the rendered document, download the file, or inspect the stored artifact.</p>',
+        '    <div class="result-actions">',
+        documentUrl && documentUrl !== "#" ? `      <a class="secondary-btn" href="${documentUrl}" target="_blank" rel="noreferrer">Open document</a>` : "",
+        downloadUrl ? `      <a class="secondary-btn" href="${downloadUrl}" target="_blank" rel="noreferrer">Download file</a>` : "",
+        previewUrl && previewUrl !== "#" && previewUrl !== documentUrl ? `      <a class="secondary-btn" href="${previewUrl}" target="_blank" rel="noreferrer">Open internal preview</a>` : "",
+        artifactUrl ? `      <a class="secondary-btn" href="${artifactUrl}" target="_blank" rel="noreferrer">Artifact JSON</a>` : "",
+        '    </div>',
+        '  </div>',
+        '</div>'
+      ].filter(Boolean).join("");
+    }
+
+    function labelForRole(role) {
+      if (role === "user") return "You";
+      if (role === "error") return "Notice";
+      return "Assistant";
+    }
+
+    function getOrCreateSessionId() {
+      const existing = localStorage.getItem(sessionStorageKey);
+      if (existing) return existing;
+      const generated = `webtest-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      localStorage.setItem(sessionStorageKey, generated);
+      return generated;
+    }
+
+    async function readJsonSafely(response) {
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch {
+        return { ok: response.ok, error: text || "Non-JSON response received." };
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function scrollMessagesToBottom() {
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+  </script>
+</body>
+</html>
